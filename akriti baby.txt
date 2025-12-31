@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Year 2026 | A Journey</title>
+    
+    <!-- Fonts: Mixing a modern geometric sans with an elegant serif -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;700&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CORE DESIGN SYSTEM (2026 AESTHETIC) --- */
+        :root {
+            --bg-deep: #050507;
+            --bg-gradient: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050507 100%);
+            --accent-glow: #c7d2fe; /* Soft Purple/Blue */
+            --accent-gold: #faddb4; /* Champagne Gold */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-sans: 'Outfit', sans-serif;
+            --font-serif: 'Playfair Display', serif;
+            --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            background-image: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Prevent scrolling, controlled journey */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Ambient Grain Texture */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* --- UI LAYERS --- */
+        #ui-layer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            text-align: center;
+            opacity: 0; /* Starts hidden */
+            transition: opacity 1s var(--ease-smooth);
+        }
+
+        .stage {
+            display: none; /* Managed by JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 50vh;
+        }
+
+        .stage.active {
+            display: flex;
+            animation: fadeInUp 1s var(--ease-smooth) forwards;
+        }
+
+        /* --- TYPOGRAPHY & ELEMENTS --- */
+        h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 600;
+            font-style: italic;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 30px rgba(165, 180, 252, 0.3);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            max-width: 90%;
+        }
+
+        .btn-glow {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s var(--ease-smooth);
+            position: relative;
+            overflow: hidden;
+            font-family: var(--font-sans);
+        }
+
+        .btn-glow:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(199, 210, 254, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .countdown-digits {
+            font-size: 6rem;
+            font-weight: 200;
+            font-variant-numeric: tabular-nums;
+            color: var(--accent-gold);
+            text-shadow: 0 0 40px rgba(250, 221, 180, 0.4);
+        }
+
+        .glass-card {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: floatUp 1s 0.5s forwards var(--ease-smooth);
+        }
+
+        .message-text {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            color: #e2e8f0;
+            white-space: pre-line; /* Preserves line breaks */
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        /* Utility for typing effect cursor */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- Overlay Effects -->
+    <div class="noise-overlay"></div>
+    <canvas id="star-canvas"></canvas>
+    <canvas id="firework-canvas"></canvas>
+
+    <!-- Main UI Container -->
+    <div id="ui-layer">
+        
+        <!-- STAGE 1: INTRO -->
+        <div id="stage-1" class="stage active">
+            <p style="letter-spacing: 3px; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 1rem;">Are you ready?</p>
+            <h1>The Chapter Turns</h1>
+            <button class="btn-glow" onclick="App.nextStage()">Begin Journey</button>
+        </div>
+
+        <!-- STAGE 2: REFLECTION -->
+        <div id="stage-2" class="stage">
+            <p id="typewriter-text" class="typing-cursor" style="font-size: 1.5rem; color: var(--text-main); min-height: 60px;"></p>
+        </div>
+
+        <!-- STAGE 3: COUNTDOWN -->
+        <div id="stage-3" class="stage">
+            <p style="text-transform: uppercase; letter-spacing: 4px;">Arriving in</p>
+            <div class="countdown-digits" id="countdown">3</div>
+        </div>
+
+        <!-- STAGE 4: CELEBRATION -->
+        <div id="stage-4" class="stage">
+            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem;">Happy New Year</h1>
+            <h1 style="font-size: 5rem; color: var(--accent-gold); -webkit-text-fill-color: var(--accent-gold);">2026</h1>
+            
+            <div class="glass-card">
+                <p class="message-text" id="final-message">
+                    <!-- Javascript will inject text here -->
+                </p>
+                <div style="margin-top: 2rem;">
+                    <p style="font-size: 0.9rem; opacity: 0.7;">With all my love,</p>
+                    <p style="font-size: 1.1rem; font-weight: bold;" id="sender-name"></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * CONFIGURATION
+         * Customize the experience here.
+         */
+        const CONFIG = {
+            recipientName: "Darling", // The name used in the typing text
+            senderName: "Your Secret Admirer", // Your name
+            // The typing text in Phase 2
+            reflectionText: [
+                "The world moves fast...",
+                "But some moments stand still.",
+                "Thank you for being my highlight of 2025."
+            ],
+            // The final letter in Phase 4
+            finalMessage: `As the clock strikes midnight, I don't wish for a perfect year.
+            
+            I simply wish for a year filled with *us*. 
+            
+            More laughter, more adventures, and more quiet moments.
+            You are the future I look forward to.
+            
+            Here's to 2026.`
+        };
+
+        /**
+         * APP LOGIC
+         */
+        const App = {
+            stage: 1,
+            elements: {
+                ui: document.getElementById('ui-layer'),
+                stages: [
+                    document.getElementById('stage-1'),
+                    document.getElementById('stage-2'),
+                    document.getElementById('stage-3'),
+                    document.getElementById('stage-4')
+                ],
+                typewriter: document.getElementById('typewriter-text'),
+                countdown: document.getElementById('countdown'),
+                finalMsg: document.getElementById('final-message'),
+                sender: document.getElementById('sender-name')
+            },
+
+            init() {
+                // Fade in UI on load
+                setTimeout(() => {
+                    this.elements.ui.style.opacity = 1;
+                }, 500);
+                
+                // Initialize Canvases
+                Starfield.init();
+                Fireworks.init();
+                
+                // Set text
+                this.elements.finalMsg.innerText = CONFIG.finalMessage;
+                this.elements.sender.innerText = CONFIG.senderName;
+            },
+
+            nextStage() {
+                this.elements.stages[this.stage - 1].classList.remove('active');
+                this.stage++;
+                const next = this.elements.stages[this.stage - 1];
+                
+                if(next) {
+                    next.classList.add('active');
+                    this.handleStageLogic();
+                }
+            },
+
+            handleStageLogic() {
+                if (this.stage === 2) {
+                    this.runTypewriter();
+                } else if (this.stage === 3) {
+                    this.runCountdown();
+                } else if (this.stage === 4) {
+                    Fireworks.startCelebration();
+                }
+            },
+
+            async runTypewriter() {
+                const textElement = this.elements.typewriter;
+                const lines = CONFIG.reflectionText;
+
+                for (let line of lines) {
+                    textElement.innerText = "";
+                    await this.typeLine(line, textElement);
+                    await new Promise(r => setTimeout(r, 1500)); // Pause reading
+                }
+                
+                // Transition to next stage automatically after reading
+                this.nextStage();
+            },
+
+            typeLine(text, element) {
+                return new Promise(resolve => {
+                    let i = 0;
+                    const interval = setInterval(() => {
+                        element.innerText += text.charAt(i);
+                        i++;
+                        if (i > text.length - 1) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 50); // Typing speed
+                });
+            },
+
+            runCountdown() {
+                let count = 3;
+                const el = this.elements.countdown;
+                
+                const timer = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        el.innerText = count;
+                        // Add a little pop effect
+                        el.style.transform = "scale(1.2)";
+                        setTimeout(() => el.style.transform = "scale(1)", 200);
+                    } else {
+                        clearInterval(timer);
+                        this.nextStage();
+                    }
+                }, 1000);
+            }
+        };
+
+        /**
+         * VISUALS: BACKGROUND STARFIELD
+         */
+        const Starfield = {
+            canvas: document.getElementById('star-canvas'),
+            ctx: null,
+            stars: [],
+            
+            init() {
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                
+                for(let i=0; i<150; i++) {
+                    this.stars.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: Math.random() * 2,
+                        speed: Math.random() * 0.2 + 0.05
+                    });
+                }
+                this.animate();
+            },
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = "white";
+                
+                this.stars.forEach(star => {
+                    this.ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Move upwards slowly
+                    star.y -= star.speed;
+                    if(star.y < 0) star.y = this.canvas.height;
+                });
+
+                requestAnimationFrame(() => this.animate());
+            }
+        };
+
+        /**
+         * VISUALS: SOPHISTICATED FIREWORKS
+         */
+        const Fireworks = {
+            canvas: document.getElementById('firework-canvas'),
+            ctx: null,
+            particles: [],
+            rockets: [],
+            isCelebrating: false,
+
+            init() {
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            },
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+
+            startCelebration() {
+                this.isCelebrating = true;
+                // Launch initial barrage
+                for(let i=0; i<5; i++) {
+                    setTimeout(() => this.launchRocket(), i * 300);
+                }
+                // Continuous random launches
+                setInterval(() => {
+                    if(document.hidden) return;
+                    this.launchRocket();
+                }, 800);
+            },
+
+            launchRocket() {
+                const x = Math.random() * this.canvas.width * 0.8 + (this.canvas.width * 0.1);
+                const targetY = Math.random() * this.canvas.height * 0.4 + (this.canvas.height * 0.1);
+                
+                this.rockets.push({
+                    x: x,
+                    y: this.canvas.height,
+                    targetY: targetY,
+                    speed: Math.random() * 3 + 8,
+                    color: `hsl(${Math.random() * 360}, 100%, 70%)`
+                });
+            },
+
+            explode(x, y, color) {
+                const particleCount = 80;
+                for(let i=0; i<particleCount; i++) {
+                    const angle = (Math.PI * 2) / particleCount * i;
+                    const velocity = Math.random() * 6 + 2;
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * velocity,
+                        vy: Math.sin(angle) * velocity,
+                        alpha: 1,
+                        color: color,
+                        decay: Math.random() * 0.015 + 0.01
+                    });
+                }
+            },
+
+            loop() {
+                // Clear with trail effect
+                this.ctx.globalCompositeOperation = 'destination-out';
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Trails
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.globalCompositeOperation = 'lighter';
+
+                // Update Rockets
+                for(let i = this.rockets.length - 1; i >= 0; i--) {
+                    const r = this.rockets[i];
+                    r.y -= r.speed;
+                    r.speed *= 0.98; // Friction
+
+                    this.ctx.fillStyle = r.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+
+                    if(r.y <= r.targetY || r.speed < 1) {
+                        this.explode(r.x, r.y, r.color);
+                        this.rockets.splice(i, 1);
+                    }
+                }
+
+                // Update Particles
+                for(let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05; // Gravity
+                    p.alpha -= p.decay;
+
+                    if(p.alpha <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+
+                    this.ctx.globalAlpha = p.alpha;
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                requestAnimationFrame(() => this.loop());
+            }
+        };
+
+        // Start everything
+        window.onload = () => App.init();
+
+    </script>
+</body>
+</html>
